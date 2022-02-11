@@ -33,9 +33,16 @@ public class Board {
     private List<Comment> comments;
 
     public void update(BoardRequestDto boardRequestDto) {
-        this.title = boardRequestDto.getTitle();
-        this.description = boardRequestDto.getDescription();
-        this.user = boardRequestDto.getUser();
+        if (boardRequestDto.getTitle() != null){
+            this.title = boardRequestDto.getTitle();
+        }
+        if (boardRequestDto.getDescription() != null){
+            this.description = boardRequestDto.getDescription();
+        }
+        if (boardRequestDto.getUser() != null){
+            this.user = boardRequestDto.getUser();
+        }
+
         this.updatedAt = LocalDateTime.now();
     }
 

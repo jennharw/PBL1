@@ -44,9 +44,15 @@ public class Comment {
     }
 
     public void update(CommentRequestDto commentRequestDto) {
-        this.title = commentRequestDto.getTitle();
-        this.description = commentRequestDto.getDescription();
-        this.commentUser = commentRequestDto.getCommentUser();
+        if (commentRequestDto.getTitle() != null){
+            this.title = commentRequestDto.getTitle();
+        }
+        if (commentRequestDto.getCommentUser() != null){
+            this.commentUser = commentRequestDto.getCommentUser();
+        }
+
+        //this.description = commentRequestDto.getDescription();
+
         this.updatedAt = LocalDateTime.now();
     }
 }

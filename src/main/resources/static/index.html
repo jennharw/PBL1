@@ -30,16 +30,14 @@
                                     let modifiedAt = response['createdAt'];
                                     let comments = response['comments'];
                                     addHTMLComment(id, username, contents, modifiedAt, description);
-                                    $('#card').append(`<div>댓글</div>`);
+                                    $('#card-box').append(`<div>댓글목록조회</div>`);
                                     for (let i = 0; i < comments.length; i++) {
                                                 let cmessage = comments[i];
                                                 let cid = cmessage['id'];
                                                 let cusername = cmessage['commentUser'];
                                                 let ccontents = cmessage['title'];
                                                 let cmodifiedAt = cmessage['createdAt'];
-//                                                 $('#card').append(`<div>댓글</div>`);
-            //                                     addHTMLComment(cid, cusername, ccontents, cmodifiedAt);
-
+                                                addHTMLComments(id, cid, cusername, ccontents, cmodifiedAt);
 
                                 }
                             }
@@ -76,10 +74,14 @@
                 }
             });
         }
-        function addHTMLComment(id, username, contents, modifiedAt) {
-                    let tempHtml = makeMessageDetail(id, username, contents, modifiedAt);
-                    $('#card').append(tempHtml);
-                    $(`#${id}-description`).hide();
+
+         function addHTMLComments(boardId, id, username, contents, modifiedAt) {
+                            let tempHtml = makeComment(boardId, id, username, contents, modifiedAt);
+                            $('#cards-box').append(tempHtml);
+                        }
+        function addHTMLComment(id, username, contents, modifiedAt,description) {
+                    let tempHtml = makeMessageDetail(id, username, contents, modifiedAt,description);
+                    $('#cards-box').append(tempHtml);
                 }
 
 
@@ -115,9 +117,7 @@
 
                         <div class="footer">
                             <button id="${id}-post" class="icon-start-edit" src="images/send.png" alt="" onclick="getMessage('${id}')">자세히</button>
-                            <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editPost('${id}')">
                             <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('${id}')">
-                            <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
                         </div>
                     </div>`;
         }
@@ -132,22 +132,26 @@
                                     <div id="${id}-username" class="username">
                                         ${username}
                                     </div>
+
                                 </div>
                                 <!-- contents 조회/수정 영역-->
                                 <div class="contents">
+                                    <div id="${id}-editarea-user" class="edit">
+                                             <textarea id="${id}-textarea-user" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
+                                    </div>
 
                                     <div id="${id}-contents" class="text">
                                         ${contents}
                                     </div>
-                                    <div>
+                                    <div id="${id}-editarea" class="edit">
+                                             <textarea id="${id}-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
                                     </div>
-
 
                                     <div id="${id}-description" class="text">
                                                                             ${description}
-                                                                        </div>
-                                    <div id="${id}-editarea" class="edit">
-                                                                    <textarea id="${id}-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
+                                    </div>
+                                    <div id="${id}-editaread" class="edit">
+                                                                    <textarea id="${id}-textarea-description" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
                                     </div>
 
 
@@ -159,8 +163,51 @@
                                     <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('${id}')">
                                     <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
                                 </div>
-                            </div>`;
+                                <textarea class="field" placeholder="댓글 내용을 입력해주세요" name="comments" id="comments" cols="10"
+                                                  rows="10"></textarea>
+                                <button class="btn btn-danger" onclick="writeComment('${id}')">댓글작성하기</button>
+                            </div>
+                            <div> 댓글 </div>`;
                 }
+
+       function makeComment(boardId, id, username, contents, modifiedAt) {
+                           return `<div class="card">
+                                       <!-- date/username 영역 -->
+                                       <div class="metadata">
+                                           <div class="date">
+                                               ${modifiedAt}
+                                           </div>
+                                           <div id="${id}-username" class="username">
+                                               ${username}
+                                           </div>
+                                       </div>
+                                       <!-- contents 조회/수정 영역-->
+                                       <div class="contents">
+
+                                           <div id="${id}-contents" class="text">
+                                               ${contents}
+                                           </div>
+                                           <div>
+                                           </div>
+
+
+
+                                           <div id="${id}-editarea" class="edit">
+                                                                           <textarea id="${id}-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
+                                           </div>
+
+
+                                       </div>
+                                       <!-- 버튼 영역-->
+
+                                       <div class="footer">
+                                           <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editComment('${boardId}','${id}')">
+                                           <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteComment('${boardId}','${id}')">
+                                           <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEditComment('${boardId}','${id}')">
+                                       </div>
+                                   </div>
+                                   <div> 댓글목록 </div>`;
+                       }
 
         function isValidContents(contents) {
             if (contents == '') {
@@ -209,27 +256,72 @@
             });
         }
 
+        function writeComment(boardId) {
+                    let contents = $('#comments').val();
+
+                    if (isValidContents(contents) == false) {
+                        return;
+                    }
+
+                    let data = {'title': contents};
+
+                    $.ajax({
+                        type: "POST",
+                        url: `/api/board/${boardId}/comments`,
+                        contentType: "application/json",
+                        data: JSON.stringify(data),
+                        success: function (response) {
+                            alert('댓글이 성공적으로 작성되었습니다.');
+                            window.location.reload();
+                        }
+                    });
+                }
+
         function editPost(id) {
             showEdits(id);
             let contents = $(`#${id}-contents`).text().trim();
+            let description = $(`#${id}-description`).text().trim();
+            let user = $(`#${id}-username`).text().trim();
+
             $(`#${id}-textarea`).val(contents);
+            $(`#${id}-textarea-description`).val(description);
+            $(`#${id}-textarea-user`).val(user);
+
+
         }
 
+         function editComment(boardId, id) {
+                    showEdits(id);
+                    let contents = $(`#${id}-contents`).text().trim();
+                    $(`#${id}-textarea`).val(contents);
+                }
+
         function showEdits(id) {
+
             $(`#${id}-description`).show();
             $(`#${id}-description-editarea`).show();
             $(`#${id}-editarea`).show();
+            $(`#${id}-editarea-user`).show();
+
+            $(`#${id}-editaread`).show();
+
             $(`#${id}-submit`).show();
             $(`#${id}-delete`).show();
 
             $(`#${id}-contents`).hide();
+            $(`#${id}-description`).hide();
+
             $(`#${id}-edit`).hide();
         }
 
         function hideEdits(id) {
             $(`#${id}-description`).hide();
             $(`#${id}-description-editarea`).hide();
+            $(`#${id}-editarea-user`).hide();
+
             $(`#${id}-editarea`).hide();
+            $(`#${id}-editaread`).hide();
+
             $(`#${id}-submit`).hide();
             $(`#${id}-delete`).hide();
 
@@ -238,12 +330,14 @@
         }
 
         function submitEdit(id) {
-            let username = $(`#${id}-username`).text().trim();
+            let username = $(`#${id}-textarea-user`).val().trim();
             let contents = $(`#${id}-textarea`).val().trim();
+            let description = $(`#${id}-textarea-description`).val().trim();
+
             if (isValidContents(contents) == false) {
                 return;
             }
-            let data = {'user': username, 'title': contents};
+            let data = {'user': username, 'title': contents, 'description':description};
 
             $.ajax({
                 type: "PATCH",
@@ -257,6 +351,25 @@
             });
         }
 
+        function submitEditComment(boardId, id) {
+                    let contents = $(`#${id}-textarea`).val().trim();
+                    if (isValidContents(contents) == false) {
+                        return;
+                    }
+                    let data = {'title': contents};
+
+                    $.ajax({
+                        type: "PATCH",
+                        url: `/api/board/${boardId}/comments/${id}`,
+                        contentType: "application/json",
+                        data: JSON.stringify(data),
+                        success: function (response) {
+                            alert('댓글 변경에 성공하였습니다.');
+                            window.location.reload();
+                        }
+                    });
+                }
+
         function deleteOne(id) {
             $.ajax({
                 type: "DELETE",
@@ -267,6 +380,16 @@
                 }
             })
         }
+        function deleteComment(boardId, id) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: `/api/board/${boardId}/comments/${id}`,
+                        success: function (response) {
+                            alert('댓글삭제에 성공하였습니다.');
+                            window.location.reload();
+                        }
+                    })
+                }
 
         function showPost(id) {
              $.ajax({
