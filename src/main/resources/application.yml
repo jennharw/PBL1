@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: demo
+
+
+
+  datasource:
+    platform: mysql
+    url: jdbc:mysql://database-1.c9yvltlthszs.ap-northeast-2.rds.amazonaws.com:3306/boardh #//?autoReconnect=true # ??????
+    username:  admin # ?????? local harim, ?? admin ?? harim
+    password:  holly5ood # ??????
+    driver-class-name: com.mysql.cj.jdbc.Driver # mysql 8??
+    # driver-class-name: com.mysql.jdbc.Driver # mysql 5??
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  thymeleaf:
+    cache: false
